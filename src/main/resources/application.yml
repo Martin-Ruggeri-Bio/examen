@@ -1,19 +1,53 @@
 spring:
+  application:
+    name: payments
   jackson:
     serialization:
       write-dates-as-timestamps: false
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
   datasource:
-      url: jdbc:mysql://127.0.0.1:3306/payments?zeroDateTimeBehavior=convertToNull
+      url: jdbc:mysql://127.0.0.1:33060/payments?zeroDateTimeBehavior=convertToNull
       username: root
-      password: password
+      password: martin_enzo
+  devtools:
+    livereload:
+      enabled: true
+    add-properties: true
 
 server:
   port: 8080
   servlet:
     context-path: '/payments'
+
+logging:
+  level:
+    web: debug
+    org:
+      hibernate:
+        SQL: debug
+  file:
+    name: logs/payments.log
+    max-history: 7
+    max-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  security:
+    enabled: 'false'
+
+jwt:
+  secret: secret
+  expiration: 3600
+  accessTokenCookieName: AuthToken
 ---
