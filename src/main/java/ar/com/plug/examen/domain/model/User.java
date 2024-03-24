@@ -26,4 +26,7 @@ public class User {
     private String userName;
 
     private String token;
+
+    private String role;
+
 }

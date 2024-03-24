@@ -50,7 +50,9 @@ public class ShoppingCartController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
+        if (!user.getRole().equals("client")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         String clientId = user.getId();
         return new ResponseEntity<>(this.shoppingCartService.getCountByClient(clientId),HttpStatus.OK);
     }
@@ -64,9 +66,12 @@ public class ShoppingCartController {
             }
             Optional<User> userOptional = userService.getByToken(token);
             User user = userOptional.orElse(null);
-            
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            //si el rol del usuario no es cliente 
+            if (!user.getRole().equals("client")) {
+                return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
             }
             if (bindingResult.hasErrors())
                 return new ResponseEntity<>(new Message("Revise los campos"),HttpStatus.BAD_REQUEST);
@@ -91,31 +96,20 @@ public class ShoppingCartController {
 
 
     @DeleteMapping("/clean/{item_id}")
-    public ResponseEntity<Message> removeProduct(@PathVariable("item_id")String id){
+    public ResponseEntity<Message> removeProduct(@RequestHeader("Authorization") String tokenHeader, @PathVariable("item_id")String id){
+        String token = tokenHeader.replace("Bearer ", "");
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Optional<User> userOptional = userService.getByToken(token);
+        User user = userOptional.orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!user.getRole().equals("client")) {
+            return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
+        }
         this.shoppingCartService.removeProduct(id);
         return new ResponseEntity<>(new Message("Eliminado"),HttpStatus.OK);
-    }
-
-    @PutMapping("/update/{item_id}")
-    public ResponseEntity<Message> updateProduct(@PathVariable("item_id")String id, @RequestHeader("Authorization") String tokenHeader,
-        @Valid @RequestBody Products products, BindingResult bindingResult){
-            String token = tokenHeader.replace("Bearer ", "");
-            if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            Optional<User> userOptional = userService.getByToken(token);
-            User user = userOptional.orElse(null);
-            
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            if (bindingResult.hasErrors())
-                return new ResponseEntity<>(new Message("Revise los campos"),HttpStatus.BAD_REQUEST);
-            ShoppingCart shoppingCart = new ShoppingCart();
-            shoppingCart.setProduct(products.getProduct());
-            shoppingCart.setClient(user);
-            shoppingCart.setAmount(products.getAmount());
-            this.shoppingCartService.updateProduct(id, shoppingCart);
-            return new ResponseEntity<>(new Message("Actualizado correctamente"),HttpStatus.OK);
     }
 }

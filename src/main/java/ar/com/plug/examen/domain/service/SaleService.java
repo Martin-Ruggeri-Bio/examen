@@ -43,8 +43,9 @@ public class SaleService {
     }
 
     // generar ventas de acuerdo a los productos que el cliente tenga en su carrito
-    public void createSale(String clientId){
+    public void createSale(String sellerId, String clientId){
         // obtengo el usuario
+        User seller = this.userService.getById(sellerId).get();
         User client = this.userService.getById(clientId).get();
         // obtengo la lista de productos del carrito del cliente
         List<ShoppingCart> shoppingCartList = this.shoppingCartService.getListByClient(clientId);
@@ -61,7 +62,7 @@ public class SaleService {
                 * shoppingCartItem.getAmount()).sum();
         // genero la venta con el formato que obtuvimos
         LocalDateTime date = LocalDateTime.now();
-        Sale sale = new Sale(Double.parseDouble(decimalFormat.format(total)), date, client);
+        Sale sale = new Sale(Double.parseDouble(decimalFormat.format(total)), date, client, seller);
         // guardo en la base de datos
         Sale saveSale = this.saleRepository.save(sale);
         // creo un detalle cor cada item del carrito
@@ -78,5 +79,9 @@ public class SaleService {
         }
         // por ultimo limpio el carrito de compra
         this.shoppingCartService.cleanShoppingCart(clientId);
+    }
+
+    public List<Sale> getSalesBySeller(String sellerId) {
+        return this.saleRepository.findBySeller_Id(sellerId);
     }
 }

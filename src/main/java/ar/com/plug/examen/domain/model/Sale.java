@@ -31,9 +31,13 @@ public class Sale {
     @ManyToOne(optional = false, cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     private User client;
 
-    public Sale(double total, LocalDateTime date, User client) {
+    @ManyToOne(optional = false, cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
+    private User seller;
+
+    public Sale(double total, LocalDateTime date, User client, User seller) {
         this.total = total;
         this.date = date;
         this.client = client;
+        this.seller = seller;
     }
 }

@@ -46,6 +46,14 @@ public class AuthController {
             // Crear un nuevo objeto User con los detalles del registro
             User user = new User();
             user.setUserName(userLogin.getUserName());
+            // si el rol del usuario es cliente
+            if (userLogin.getRole().equals("client")) {
+                user.setRole("client");
+            } else if (userLogin.getRole().equals("seller")){
+                user.setRole("seller");
+            } else {
+                throw new RuntimeException("Rol inválido");
+            }
             // Crear el token JWT
             String token = Jwts.builder()
                     .setSubject(user.getUserName())

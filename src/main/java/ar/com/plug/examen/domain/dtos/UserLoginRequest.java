@@ -12,4 +12,6 @@ import lombok.Data;
 public class UserLoginRequest {
     @NotNull
     private String userName;
+    @NotNull
+    private String role;
 }

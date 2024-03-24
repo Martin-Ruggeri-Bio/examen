@@ -58,14 +58,19 @@ public class SaleController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        if (!user.getRole().equals("seller")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         Sales sales = new Sales(this.saleService.findByDateBetween(dateRange.getFechaInicio(), dateRange.getFechaFin()));
         return new ResponseEntity<>(sales, HttpStatus.OK);
     }
 
 
     // ventas realizadas a un cliente especifico
-    @GetMapping("/client")
-    public ResponseEntity<List<Sale>> getByClient(@RequestHeader(value="Authorization", required=true) String tokenHeader){
+    @PostMapping("/client")
+    public ResponseEntity<List<Sale>> getByClient(@RequestHeader(value="Authorization", required=true) String tokenHeader,
+    @Valid @RequestBody User client, BindingResult bindingResult){
         String token = tokenHeader.replace("Bearer ", "");
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -77,11 +82,16 @@ public class SaleController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String clientId = user.getId();
+        if (!user.getRole().equals("seller")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        String clientId = client.getId();
         return new ResponseEntity<>(this.saleService.getSalesByClient(clientId), HttpStatus.OK);
     }
-    @PostMapping(path = "/create")
-    public ResponseEntity<Message> createSale(@RequestHeader(value="Authorization", required=true) String tokenHeader){
+
+    @GetMapping("/seller")
+    public ResponseEntity<List<Sale>> getBySeller(@RequestHeader(value="Authorization", required=true) String tokenHeader){
         String token = tokenHeader.replace("Bearer ", "");
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -93,8 +103,32 @@ public class SaleController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String clientId = user.getId();
-        this.saleService.createSale(clientId);
+        String sellerId = user.getId();
+        return new ResponseEntity<>(this.saleService.getSalesBySeller(sellerId), HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/create")
+    public ResponseEntity<Message> createSale(@RequestHeader(value="Authorization", required=true) String tokenHeader,
+        @Valid @RequestBody User client, BindingResult bindingResult){
+        String token = tokenHeader.replace("Bearer ", "");
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Optional<User> userOptional = userService.getByToken(token);
+        User seller = userOptional.orElse(null);
+        
+        if (seller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!seller.getRole().equals("seller")) {
+            return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
+        }
+        String sellerId = seller.getId();
+        if (!client.getRole().equals("client")) {
+            return new ResponseEntity<>(new Message("El cliente no es valido"),HttpStatus.UNAUTHORIZED);
+        }
+        String clientId = client.getId();
+        this.saleService.createSale(sellerId, clientId);
         return new ResponseEntity<>(new Message("Compra exitosa"), HttpStatus.OK);
     }
 }

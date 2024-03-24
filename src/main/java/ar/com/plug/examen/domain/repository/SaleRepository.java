@@ -11,4 +11,5 @@ import java.util.List;
 public interface SaleRepository extends JpaRepository<Sale,String> {
     List<Sale> findByClient_Id(String clientId);
     List<Sale> findByDateBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+    List<Sale> findBySeller_Id(String sellerId);
 }
