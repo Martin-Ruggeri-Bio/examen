@@ -4,6 +4,7 @@ import ar.com.plug.examen.domain.model.Detail;
 import ar.com.plug.examen.domain.model.Sale;
 import ar.com.plug.examen.domain.model.ShoppingCart;
 import ar.com.plug.examen.domain.repository.SaleRepository;
+import lombok.extern.slf4j.Slf4j;
 import ar.com.plug.examen.domain.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Locale;
 
 @Service
 @Transactional
+@Slf4j
 public class SaleService {
 
     @Autowired
@@ -44,7 +46,7 @@ public class SaleService {
 
     // generar ventas de acuerdo a los productos que el cliente tenga en su carrito
     public void createSale(String sellerId, String clientId){
-        // obtengo el usuario
+        log.info("Creating sale for client with ID: {}", clientId);
         User seller = this.userService.getById(sellerId).get();
         User client = this.userService.getById(clientId).get();
         // obtengo la lista de productos del carrito del cliente
@@ -60,11 +62,12 @@ public class SaleService {
         //      El resultado se almacena en la variable total
         double total = shoppingCartList.stream().mapToDouble(shoppingCartItem -> shoppingCartItem.getProduct().getPrecio()
                 * shoppingCartItem.getAmount()).sum();
-        // genero la venta con el formato que obtuvimos
+        log.info("Total sale amount calculated: {}", decimalFormat.format(total));
         LocalDateTime date = LocalDateTime.now();
         Sale sale = new Sale(Double.parseDouble(decimalFormat.format(total)), date, client, seller);
-        // guardo en la base de datos
+        log.info("Sale generated: {}", sale);
         Sale saveSale = this.saleRepository.save(sale);
+        log.info("Sale saved in database: {}", saveSale);
         // creo un detalle cor cada item del carrito
         for (ShoppingCart shoppingCart : shoppingCartList) {
             Integer amountDetail = shoppingCart.getAmount();
@@ -77,11 +80,13 @@ public class SaleService {
                 this.detailService.createDetail(detail);
             }
         }
-        // por ultimo limpio el carrito de compra
+        log.info("Sale details created and saved successfully");
         this.shoppingCartService.cleanShoppingCart(clientId);
+        log.info("Shopping cart cleaned for client with ID: {}", clientId);
     }
 
     public List<Sale> getSalesBySeller(String sellerId) {
+        log.info("Fetching sales for seller with ID: {}", sellerId);
         return this.saleRepository.findBySeller_Id(sellerId);
     }
 }

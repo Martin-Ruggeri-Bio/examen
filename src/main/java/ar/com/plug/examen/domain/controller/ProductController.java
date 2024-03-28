@@ -34,32 +34,52 @@ public class ProductController {
 
 	@GetMapping("/all")
 	public ResponseEntity<List<Product>> findAll() {
+		log.info("Buscando todos los productos");
 		return new ResponseEntity<List<Product>>(service.findAll(), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Product> findById(@PathVariable Integer id) {
 		try {
+			log.info("Buscando producto por id {}", id);
 			return new ResponseEntity<Product>(service.findById(id), HttpStatus.OK);
 		} catch (ProductNotFoundException e) {
+			log.error(e.getMessage());
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Product> add(@RequestBody Product product) {
-		return new ResponseEntity<Product>(service.add(product), HttpStatus.OK);
+		try{
+			log.info("Creando producto {}", product);
+			return new ResponseEntity<Product>(service.add(product), HttpStatus.OK);
+		} catch (ProductNotFoundException e) {
+			log.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Boolean> deleteById(@PathVariable Integer id) {
-		log.debug("Eliminando cliente {}", id);
-		return new ResponseEntity<Boolean>(service.deleteById(id), HttpStatus.OK);
+		try{
+			log.debug("Eliminando cliente {}", id);
+			return new ResponseEntity<Boolean>(service.deleteById(id), HttpStatus.OK);
+		} catch (ProductNotFoundException e) {
+			log.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
 	@PutMapping("/update/{id}")
 	public ResponseEntity<Product> update(@RequestBody Product product, @PathVariable Integer id) {
-		return new ResponseEntity<Product>(service.update(product, id), HttpStatus.OK);
+		try{
+			log.info("Actualizando producto {}", product);
+			return new ResponseEntity<Product>(service.update(product, id), HttpStatus.OK);
+		} catch (ProductNotFoundException e){
+			log.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		}
 	}
 
 }

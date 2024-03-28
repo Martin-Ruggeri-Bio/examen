@@ -6,6 +6,7 @@ import ar.com.plug.examen.domain.model.ShoppingCart;
 import ar.com.plug.examen.domain.model.User;
 import ar.com.plug.examen.domain.service.ShoppingCartService;
 import ar.com.plug.examen.domain.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/shoppingList")
+@Slf4j
 public class ShoppingCartController {
 
     @Autowired
@@ -34,10 +36,12 @@ public class ShoppingCartController {
         User user = userOptional.orElse(null);
         
         if (user == null) {
+            log.error("Usuario no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String clientId = user.getId();
+        log.info("Lista de compras obtenida con éxito");
         return new ResponseEntity<>(this.shoppingCartService.getListByClient(clientId), HttpStatus.OK);
     }
 
@@ -48,12 +52,15 @@ public class ShoppingCartController {
         User user = userOptional.orElse(null);
         
         if (user == null) {
+            log.error("Usuario no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (!user.getRole().equals("client")) {
+            log.error("No tiene permisos");
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String clientId = user.getId();
+        log.info("Cantidad de productos en carrito obtenida con éxito");
         return new ResponseEntity<>(this.shoppingCartService.getCountByClient(clientId),HttpStatus.OK);
     }
 
@@ -62,19 +69,24 @@ public class ShoppingCartController {
         @Valid @RequestBody Products products, BindingResult bindingResult){
             String token = tokenHeader.replace("Bearer ", "");
             if (token == null) {
+                log.error("Token no encontrado");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             Optional<User> userOptional = userService.getByToken(token);
             User user = userOptional.orElse(null);
             if (user == null) {
+                log.error("Usuario no encontrado");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             //si el rol del usuario no es cliente 
             if (!user.getRole().equals("client")) {
+                log.error("No tiene permisos");
                 return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
             }
-            if (bindingResult.hasErrors())
+            if (bindingResult.hasErrors()){
+                log.error("Revise los campos");
                 return new ResponseEntity<>(new Message("Revise los campos"),HttpStatus.BAD_REQUEST);
+            }
             ShoppingCart shoppingCartOld = this.shoppingCartService.getByClientAndProduct(user.getId(), products.getProduct().getId());
             if (shoppingCartOld != null) {
                 // si el product ya esta en carrito del cliente aumenta su cantidad
@@ -82,6 +94,7 @@ public class ShoppingCartController {
                 shoppingCartNew.setProduct(products.getProduct());
                 shoppingCartNew.setClient(user);
                 shoppingCartNew.setAmount(shoppingCartOld.getAmount() + products.getAmount());
+                log.info("Actualizando Procucto en carrito");
                 this.shoppingCartService.updateProduct(shoppingCartOld.getId(), shoppingCartNew);
             } else {
                 //sino lo agrega
@@ -89,8 +102,10 @@ public class ShoppingCartController {
                 shoppingCart.setProduct(products.getProduct());
                 shoppingCart.setClient(user);
                 shoppingCart.setAmount(products.getAmount());
+                log.info("Agregando Procucto en carrito");
                 this.shoppingCartService.addProduct(shoppingCart);
             }
+            log.info("Producto agregado");
             return new ResponseEntity<>(new Message("Producto agregado"),HttpStatus.OK);
     }
 
@@ -99,17 +114,21 @@ public class ShoppingCartController {
     public ResponseEntity<Message> removeProduct(@RequestHeader("Authorization") String tokenHeader, @PathVariable("item_id")String id){
         String token = tokenHeader.replace("Bearer ", "");
         if (token == null) {
+            log.error("Token no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Optional<User> userOptional = userService.getByToken(token);
         User user = userOptional.orElse(null);
         if (user == null) {
+            log.error("Usuario no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (!user.getRole().equals("client")) {
+            log.error("No tiene permisos");
             return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
         }
         this.shoppingCartService.removeProduct(id);
+        log.info("Producto eliminado");
         return new ResponseEntity<>(new Message("Eliminado"),HttpStatus.OK);
     }
 }

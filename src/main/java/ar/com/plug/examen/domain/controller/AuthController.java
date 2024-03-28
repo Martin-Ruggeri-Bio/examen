@@ -18,6 +18,7 @@ import ar.com.plug.examen.domain.dtos.UserLoginRequest;
 import ar.com.plug.examen.domain.dtos.UserTokenResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 
 // Este controlador recibe un objeto UserLoginRequest que contiene el nombre de usuario. 
 // Luego busca un usuario en la base de datos con el nombre de usuario proporcionado y verifica si la contraseña coincide.
@@ -26,6 +27,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
     
     @Autowired
@@ -41,6 +43,7 @@ public class AuthController {
                 Optional<User> userOptional = userService.getByUserName(userLogin.getUserName());
                 User user = userOptional.orElse(null);
                 UserTokenResponse userTokenResponse = new UserTokenResponse(user.getToken());
+                log.info("Usuario logueado con éxito");
                 return userTokenResponse;
             }
             // Crear un nuevo objeto User con los detalles del registro
@@ -52,6 +55,7 @@ public class AuthController {
             } else if (userLogin.getRole().equals("seller")){
                 user.setRole("seller");
             } else {
+                log.error("Rol inválido");
                 throw new RuntimeException("Rol inválido");
             }
             // Crear el token JWT
@@ -63,8 +67,10 @@ public class AuthController {
             user.setToken(token);
             userService.save(user);
             UserTokenResponse userTokenResponse = new UserTokenResponse(token);
+            log.info("Usuario creado y logueado con éxito");
             return userTokenResponse;
         } else {
+            log.error("Credenciales inválidas");
             throw new RuntimeException("Credenciales inválidas");
         }
     }
@@ -75,9 +81,11 @@ public class AuthController {
         Optional<User> userOptional = userService.getByToken(token);
         User user = userOptional.orElse(null);
         if (user == null) {
+            log.error("Usuario no autorizado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         this.userService.delete(user);
+        log.info("Usuario deslogueado con éxito");
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

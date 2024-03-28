@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ar.com.plug.examen.domain.exception.ProductNotFoundException;
 import ar.com.plug.examen.domain.model.Product;
 import ar.com.plug.examen.domain.repository.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -19,46 +20,54 @@ import ar.com.plug.examen.domain.repository.ProductRepository;
  */
 @Service
 @Transactional
+@Slf4j
 public class ProductService {
 
-	@Autowired
-	private ProductRepository repository;
+    @Autowired
+    private ProductRepository repository;
 
-	public Product add(Product product) {
-		return repository.save(product);
-	}
+    public Product add(Product product) {
+        log.info("Adding new product: {}", product);
+        return repository.save(product);
+    }
 
-	public List<Product> findAll() {
-		return repository.findAll();
-	}
+    public List<Product> findAll() {
+        log.info("Fetching all products");
+        return repository.findAll();
+    }
 
-	public Product findById(Integer id) {
-		return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
-	}
+    public Product findById(Integer id) {
+        log.info("Fetching product by ID: {}", id);
+        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+    }
 
-	public Boolean deleteById(Integer id) {
-		if (repository.findById(id).isEmpty()) {
-			return false;
-		}
-		repository.deleteById(id);
-		return !repository.findById(id).isPresent();
-	}
+    public Boolean deleteById(Integer id) {
+        log.info("Deleting product by ID: {}", id);
+        if (repository.findById(id).isEmpty()) {
+            log.warn("Product with ID {} not found for deletion", id);
+            return false;
+        }
+        repository.deleteById(id);
+        log.info("Product with ID {} deleted successfully", id);
+        return !repository.findById(id).isPresent();
+    }
 
-	public Product update(Product newProduct, Integer id) {
-		return repository.findById(id).map(product -> {
-			product = new Product(
-				id,
-				newProduct.getNombre(),
-				newProduct.getDescripcion(),
-				newProduct.getPrecio(),
-				newProduct.getUrlImagen(),
-				newProduct.getActivo(),
-				newProduct.getCreado(),
-				newProduct.getActualizado()
-				);
-			return repository.save(product);
-		}).orElseThrow(() -> new ProductNotFoundException(id));
-	}
-
+    public Product update(Product newProduct, Integer id) {
+        log.info("Updating product with ID: {}", id);
+        return repository.findById(id).map(product -> {
+            product = new Product(
+                    id,
+                    newProduct.getNombre(),
+                    newProduct.getDescripcion(),
+                    newProduct.getPrecio(),
+                    newProduct.getUrlImagen(),
+                    newProduct.getActivo(),
+                    newProduct.getCreado(),
+                    newProduct.getActualizado()
+            );
+            Product updatedProduct = repository.save(product);
+            log.info("Product updated successfully: {}", updatedProduct);
+            return updatedProduct;
+        }).orElseThrow(() -> new ProductNotFoundException(id));
+    }
 }
-
