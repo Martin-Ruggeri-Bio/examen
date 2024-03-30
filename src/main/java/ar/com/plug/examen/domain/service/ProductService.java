@@ -2,8 +2,6 @@ package ar.com.plug.examen.domain.service;
 
 import java.util.List;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,12 +34,12 @@ public class ProductService {
         return repository.findAll();
     }
 
-    public Product findById(Integer id) {
+    public Product findById(Long id) {
         log.info("Fetching product by ID: {}", id);
         return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public Boolean deleteById(Integer id) {
+    public Boolean deleteById(Long id) {
         log.info("Deleting product by ID: {}", id);
         if (repository.findById(id).isEmpty()) {
             log.warn("Product with ID {} not found for deletion", id);
@@ -52,7 +50,7 @@ public class ProductService {
         return !repository.findById(id).isPresent();
     }
 
-    public Product update(Product newProduct, Integer id) {
+    public Product update(Product newProduct, Long id) {
         log.info("Updating product with ID: {}", id);
         return repository.findById(id).map(product -> {
             product = new Product(

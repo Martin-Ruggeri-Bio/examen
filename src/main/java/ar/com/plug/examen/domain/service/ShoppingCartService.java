@@ -49,7 +49,7 @@ public class ShoppingCartService {
         this.shoppingCartRepository.save(shoppingCart);
     }
 
-    public ShoppingCart getByClientAndProduct(String clientId, Integer productId){
+    public ShoppingCart getByClientAndProduct(String clientId, Long productId){
         log.info("Fetching shopping cart item for client with ID: {} and product with ID: {}", clientId, productId);
         return this.shoppingCartRepository.findFirstByClient_IdAndProduct_Id(clientId, productId);
     }

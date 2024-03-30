@@ -1,6 +1,8 @@
 package ar.com.plug.examen.domain.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -19,7 +21,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Product {
 	@Id
-	private Integer id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 	private String nombre;
 	private String descripcion;
 	private Float precio;

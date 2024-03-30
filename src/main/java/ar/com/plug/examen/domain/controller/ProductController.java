@@ -39,7 +39,7 @@ public class ProductController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Product> findById(@PathVariable Integer id) {
+	public ResponseEntity<Product> findById(@PathVariable Long id) {
 		try {
 			log.info("Buscando producto por id {}", id);
 			return new ResponseEntity<Product>(service.findById(id), HttpStatus.OK);
@@ -61,7 +61,7 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Boolean> deleteById(@PathVariable Integer id) {
+	public ResponseEntity<Boolean> deleteById(@PathVariable Long id) {
 		try{
 			log.debug("Eliminando cliente {}", id);
 			return new ResponseEntity<Boolean>(service.deleteById(id), HttpStatus.OK);
@@ -72,7 +72,7 @@ public class ProductController {
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Product> update(@RequestBody Product product, @PathVariable Integer id) {
+	public ResponseEntity<Product> update(@RequestBody Product product, @PathVariable Long id) {
 		try{
 			log.info("Actualizando producto {}", product);
 			return new ResponseEntity<Product>(service.update(product, id), HttpStatus.OK);

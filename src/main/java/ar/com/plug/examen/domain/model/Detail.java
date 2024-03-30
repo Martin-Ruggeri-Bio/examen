@@ -20,6 +20,6 @@ public class Detail {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'z'")
     private LocalDateTime fecha;
     private String ventaId;
-    private Integer product;
+    private Long product;
     private Float precio;
 }

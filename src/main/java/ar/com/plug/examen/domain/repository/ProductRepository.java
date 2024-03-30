@@ -13,11 +13,11 @@ import ar.com.plug.examen.domain.model.Product;
  * JpaRepository trae todas las operraciones basicas de un crud
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Integer> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	public Optional<Product> findById(Integer id);
+	public Optional<Product> findById(Long id);
 
 	@Modifying
-	public void deleteById(Integer id);
+	public void deleteById(Long id);
 
 }
