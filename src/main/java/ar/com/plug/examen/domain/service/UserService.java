@@ -38,9 +38,9 @@ public class UserService {
         return userRepository.existsByUserName(userName);
     }
     
-    public void save(User user){
+    public User save(User user){
         log.info("Saving user: {}", user);
-        userRepository.save(user);
+        return userRepository.save(user);
     }
     
     public void delete(User user){

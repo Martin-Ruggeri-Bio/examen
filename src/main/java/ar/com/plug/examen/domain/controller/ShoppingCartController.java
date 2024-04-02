@@ -89,21 +89,10 @@ public class ShoppingCartController {
             }
             ShoppingCart shoppingCartOld = this.shoppingCartService.getByClientAndProduct(user.getId(), products.getProduct().getId());
             if (shoppingCartOld != null) {
-                // si el product ya esta en carrito del cliente aumenta su cantidad
-                ShoppingCart shoppingCartNew = new ShoppingCart();
-                shoppingCartNew.setProduct(products.getProduct());
-                shoppingCartNew.setClient(user);
-                shoppingCartNew.setAmount(shoppingCartOld.getAmount() + products.getAmount());
                 log.info("Actualizando Procucto en carrito");
-                this.shoppingCartService.updateProduct(shoppingCartOld.getId(), shoppingCartNew);
+                this.shoppingCartService.updateProduct(shoppingCartOld, products.getProduct(), products.getAmount(), user);
             } else {
-                //sino lo agrega
-                ShoppingCart shoppingCart = new ShoppingCart();
-                shoppingCart.setProduct(products.getProduct());
-                shoppingCart.setClient(user);
-                shoppingCart.setAmount(products.getAmount());
-                log.info("Agregando Procucto en carrito");
-                this.shoppingCartService.addProduct(shoppingCart);
+                this.shoppingCartService.addProduct(products.getProduct(), products.getAmount(), user);
             }
             log.info("Producto agregado");
             return new ResponseEntity<>(new Message("Producto agregado"),HttpStatus.OK);
@@ -127,7 +116,7 @@ public class ShoppingCartController {
             log.error("No tiene permisos");
             return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
         }
-        this.shoppingCartService.removeProduct(id);
+        this.shoppingCartService.delete(id);
         log.info("Producto eliminado");
         return new ResponseEntity<>(new Message("Eliminado"),HttpStatus.OK);
     }

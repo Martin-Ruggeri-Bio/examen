@@ -1,6 +1,8 @@
 package ar.com.plug.examen.domain.service;
 
+import ar.com.plug.examen.domain.model.Product;
 import ar.com.plug.examen.domain.model.ShoppingCart;
+import ar.com.plug.examen.domain.model.User;
 import ar.com.plug.examen.domain.repository.ShoppingCartRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,14 +30,22 @@ public class ShoppingCartService {
         this.shoppingCartRepository.deleteByClient_Id(clientId);
     }
     
-    public void removeProduct(String id){
-        log.info("Removing product from shopping cart with ID: {}", id);
-        this.shoppingCartRepository.deleteById(id);
+    public void updateProduct(ShoppingCart shoppingCartOld, Product product, Integer amount, User user){
+        ShoppingCart shoppingCartNew = new ShoppingCart();
+        shoppingCartNew.setProduct(product);
+        shoppingCartNew.setClient(user);
+        shoppingCartNew.setAmount(shoppingCartOld.getAmount() + amount);
+        log.info("Actualizando Procucto en carrito");
+        this.update(shoppingCartOld.getId(), shoppingCartNew);
     }
-    
-    public void addProduct(ShoppingCart shoppingCart){
+
+    public ShoppingCart addProduct(Product product, Integer amount, User user){
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setProduct(product);
+        shoppingCart.setClient(user);
+        shoppingCart.setAmount(amount);
         log.info("Adding product to shopping cart: {}", shoppingCart);
-        this.shoppingCartRepository.save(shoppingCart);
+        return this.shoppingCartRepository.save(shoppingCart);
     }
     
     public Long getCountByClient(String clientId){
@@ -43,10 +53,15 @@ public class ShoppingCartService {
         return this.shoppingCartRepository.countByClient_Id(clientId);
     }
 
-    public void updateProduct(String id, ShoppingCart shoppingCart){
+    public void update(String id, ShoppingCart shoppingCart){
         log.info("Updating product in shopping cart with ID: {}", id);
         this.shoppingCartRepository.deleteById(id);
         this.shoppingCartRepository.save(shoppingCart);
+    }
+
+    public void delete(String id){
+        log.info("Deleting product in shopping cart with ID: {}", id);
+        this.shoppingCartRepository.deleteById(id);
     }
 
     public ShoppingCart getByClientAndProduct(String clientId, Long productId){
