@@ -32,6 +32,8 @@ public class ShoppingCartServiceTest {
         // Arrange
         ShoppingCart shoppingCart = new ShoppingCart();
         Product product = new Product();
+        product.setNombre("nombre1");
+        product.setPrecio(100.0F);
         User client = new User();
 
         Product added_product = productService.add(product);
@@ -69,6 +71,7 @@ public class ShoppingCartServiceTest {
 
         Product product = new Product();
         product.setNombre("nombre1");
+        product.setPrecio(100.0F);
         Product added_product = productService.add(product);
 
         shoppingCartService.addProduct(added_product, 2, added_client);
@@ -86,6 +89,8 @@ public class ShoppingCartServiceTest {
     public void testGetCountByClient() {
         // Arrange
         Product product = new Product();
+        product.setNombre("nombre1");
+        product.setPrecio(100.0F);
         User client = new User();
         Product added_product = productService.add(product);
         User added_client = userService.save(client);
@@ -93,6 +98,8 @@ public class ShoppingCartServiceTest {
         shoppingCartService.addProduct(added_product, 1, added_client);
 
         Product product2 = new Product();
+        product2.setNombre("nombre2");
+        product2.setPrecio(200.0F);
         Product added_product2 = productService.add(product2);
 
         shoppingCartService.addProduct(added_product2, 2, added_client);
@@ -109,6 +116,8 @@ public class ShoppingCartServiceTest {
     public void testGetByClientAndProduct() {
         // Arrange
         Product product = new Product();
+        product.setNombre("nombre1");
+        product.setPrecio(100.0F);
         User client = new User();
 
         Product added_product = productService.add(product);

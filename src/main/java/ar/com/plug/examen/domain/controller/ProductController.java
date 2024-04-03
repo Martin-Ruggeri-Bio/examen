@@ -2,9 +2,12 @@ package ar.com.plug.examen.domain.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,11 +53,18 @@ public class ProductController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<Product> add(@RequestBody Product product) {
-		try{
+	public ResponseEntity<Product> add(@Valid @RequestBody Product product, BindingResult bindingResult) {
+		if (bindingResult.hasErrors()) {
+			log.error("Datos de producto incorrectos {}", product);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos de producto incorrectos");
+		}
+		try {
 			log.info("Creando producto {}", product);
 			return new ResponseEntity<Product>(service.add(product), HttpStatus.OK);
 		} catch (ProductNotFoundException e) {
+			log.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+		} catch (IllegalArgumentException e) {
 			log.error(e.getMessage());
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}

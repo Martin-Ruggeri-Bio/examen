@@ -26,6 +26,10 @@ public class ProductService {
 
     public Product add(Product product) {
         log.info("Adding new product: {}", product);
+        if (product.getNombre() == null || product.getNombre().isEmpty() || product.getPrecio() == null || product.getPrecio() < 0) {
+            log.error("Invalid product data: {}", product);
+            throw new IllegalArgumentException("Invalid product data");
+        }
         return repository.save(product);
     }
 
