@@ -3,14 +3,18 @@ package ar.com.plug.examen.domain.controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 
 import ar.com.plug.examen.domain.service.UserService;
 import ar.com.plug.examen.domain.model.User;
@@ -34,31 +38,32 @@ public class AuthController {
 	private UserService userService;
 
     @PostMapping("/login")
-    public UserTokenResponse login(@RequestBody UserLoginRequest userLogin) {
-        // Validar el usuario y la contraseña en memoria
-        if (userLogin.getUserName() != null) {
-            // Verificar si el nombre de usuario ya existe
+    public ResponseEntity<UserTokenResponse> login(@Valid @RequestBody UserLoginRequest userLogin, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            log.error("Credenciales inválidas {}", userLogin);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credenciales inválidas");
+        }
+        try {
             if (userService.existByUserName(userLogin.getUserName())) {
-                // throw new RuntimeException("El nombre de usuario ya está en uso");
                 Optional<User> userOptional = userService.getByUserName(userLogin.getUserName());
                 User user = userOptional.orElse(null);
                 UserTokenResponse userTokenResponse = new UserTokenResponse(user.getToken());
                 log.info("Usuario logueado con éxito");
-                return userTokenResponse;
+                return new ResponseEntity<UserTokenResponse>(userTokenResponse, HttpStatus.OK);
             }
-            // Crear un nuevo objeto User con los detalles del registro
+
             User user = new User();
             user.setUserName(userLogin.getUserName());
-            // si el rol del usuario es cliente
+
             if (userLogin.getRole().equals("client")) {
                 user.setRole("client");
             } else if (userLogin.getRole().equals("seller")){
                 user.setRole("seller");
             } else {
                 log.error("Rol inválido");
-                throw new RuntimeException("Rol inválido");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rol inválido");
             }
-            // Crear el token JWT
+
             String token = Jwts.builder()
                     .setSubject(user.getUserName())
                     .claim("userId", user.getId())
@@ -68,10 +73,10 @@ public class AuthController {
             userService.save(user);
             UserTokenResponse userTokenResponse = new UserTokenResponse(token);
             log.info("Usuario creado y logueado con éxito");
-            return userTokenResponse;
-        } else {
-            log.error("Credenciales inválidas");
-            throw new RuntimeException("Credenciales inválidas");
+            return new ResponseEntity<UserTokenResponse>(userTokenResponse, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

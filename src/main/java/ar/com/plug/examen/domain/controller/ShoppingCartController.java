@@ -116,7 +116,13 @@ public class ShoppingCartController {
             log.error("No tiene permisos");
             return new ResponseEntity<>(new Message("No tiene permisos"),HttpStatus.UNAUTHORIZED);
         }
-        this.shoppingCartService.delete(id);
+        Long idLong = Long.parseLong(id);
+        ShoppingCart shoppingCartOld = this.shoppingCartService.getByClientAndProduct(user.getId(), idLong);
+        if (shoppingCartOld == null) {
+            log.error("Producto no encontrado");
+            return new ResponseEntity<>(new Message("Producto no encontrado"),HttpStatus.NOT_FOUND);
+        }
+        this.shoppingCartService.delete(shoppingCartOld.getId());
         log.info("Producto eliminado");
         return new ResponseEntity<>(new Message("Eliminado"),HttpStatus.OK);
     }
