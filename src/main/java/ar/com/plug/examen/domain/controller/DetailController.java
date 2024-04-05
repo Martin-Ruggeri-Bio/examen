@@ -43,6 +43,10 @@ public class DetailController {
             log.error("Usuario no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        if (!user.getRole().equals("seller")) {
+            log.error("Rol no autorizado");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         log.info("Detalles de venta obtenidos con éxito");
         return new ResponseEntity<>(this.detailService.getDetailsAll(), HttpStatus.OK);
     }
@@ -62,6 +66,10 @@ public class DetailController {
         if (user == null) {
             log.error("Usuario no encontrado");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!user.getRole().equals("seller")) {
+            log.error("Rol no autorizado");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         Details details = new Details(this.detailService.findByDateBetween(dateRange.getFechaInicio(), dateRange.getFechaFin()));
         log.info("Detalles de venta obtenidos con éxito");

@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ShoppingCartControllerTest {
+public class DetailControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -27,7 +27,15 @@ public class ShoppingCartControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String token;
+    private String sellerToken;
+
+    private String clientToken;
+
+    private String clientJson;
+
+    private String sellerJson;
+
+    private String dateRangeJson;
 
     private String productJson;
 
@@ -35,12 +43,23 @@ public class ShoppingCartControllerTest {
 
     private String response_product;
 
-    //obtener token
+    private String response_client_login;
+
     @Before
     public void setUp() throws Exception {
-        String userLoginRequestJson = "{"
-        + "\"userName\":\"testUserName\","
+        sellerJson = "{"
+        + "\"userName\":\"sellerDetailName\","
+        + "\"role\":\"seller\""
+        + "}";
+
+        clientJson = "{"
+        + "\"userName\":\"clientDetailName\","
         + "\"role\":\"client\""
+        + "}";
+
+        dateRangeJson = "{"
+        + "\"fechaInicio\":\"2022-01-01T00:00:00Z\","
+        + "\"fechaFin\":\"2025-01-01T00:00:00Z\""
         + "}";
 
         productJson = "{"
@@ -53,68 +72,64 @@ public class ShoppingCartControllerTest {
         + "\"actualizado\":\"2024-03-29T12:01:00Z\""
         + "}";
 
-        MvcResult result_login = mockMvc.perform(post("/auth/login")
+        MvcResult seller_login = mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(userLoginRequestJson))
+                .content(sellerJson))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String response_login = result_login.getResponse().getContentAsString();
-        token = "Bearer " + objectMapper.readTree(response_login).get("token").asText();
+        String response_seller_login = seller_login.getResponse().getContentAsString();
+        sellerToken = "Bearer " + objectMapper.readTree(response_seller_login).get("token").asText();
 
+        MvcResult client_login = mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(clientJson))
+                .andExpect(status().isOk())
+                .andReturn();
+        
+        response_client_login = client_login.getResponse().getContentAsString();
+        clientToken = "Bearer " + objectMapper.readTree(response_client_login).get("token").asText();
+    
+    
         MvcResult result_product = mockMvc.perform(post("/product/create")
                                             .contentType(MediaType.APPLICATION_JSON)
                                             .content(productJson))
                                             .andExpect(status().isOk())
                                             .andReturn();
-        
+
         response_product = result_product.getResponse().getContentAsString();
 
         shoppingCart = "{"
         + "\"product\":" + response_product + ","
         + "\"amount\":1"
         + "}";
-    }
-
-    @Test
-    public void testGetListByClient() throws Exception {
-
-        mockMvc.perform(get("/shoppingList")
-                .header("Authorization", token))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testCountByClient() throws Exception {
-
-        mockMvc.perform(get("/shoppingList/count")
-                .header("Authorization", token))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testAddProduct() throws Exception {
 
         mockMvc.perform(post("/shoppingList/addProduct")
-                .header("Authorization", token)
+                .header("Authorization", clientToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(shoppingCart))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testCleanProduct() throws Exception {
-
-        mockMvc.perform(post("/shoppingList/addProduct")
-                .header("Authorization", token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(shoppingCart))
-                .andExpect(status().isOk());
-
-        String itemId = objectMapper.readTree(response_product).get("id").asText();
         
-        mockMvc.perform(delete("/shoppingList/clean/" + itemId)
-                .header("Authorization", token))
+        mockMvc.perform(post("/sale/create")
+                .header("Authorization", sellerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(response_client_login))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testGetDetailsBySale() throws Exception {
+        mockMvc.perform(get("/saleDetail/client")
+                .header("Authorization", sellerToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testFindByDateBetween() throws Exception {
+        mockMvc.perform(post("/saleDetail/date-between")
+                .header("Authorization", sellerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(dateRangeJson))
                 .andExpect(status().isOk());
     }
 }

@@ -118,6 +118,11 @@ public class SaleController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        if (!user.getRole().equals("seller")) {
+            log.error("Rol no autorizado");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
         String sellerId = user.getId();
         log.info("Ventas obtenidas con éxito");
         return new ResponseEntity<>(this.saleService.getSalesBySeller(sellerId), HttpStatus.OK);

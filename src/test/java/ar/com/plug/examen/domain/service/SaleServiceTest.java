@@ -1,8 +1,11 @@
 package ar.com.plug.examen.domain.service;
 
+import ar.com.plug.examen.domain.model.Product;
 import ar.com.plug.examen.domain.model.Sale;
 import ar.com.plug.examen.domain.model.User;
+
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +25,35 @@ public class SaleServiceTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ProductService productService;
+
+    @Autowired
+    private ShoppingCartService shoppingCartService;
+
+    private User added_seller;
+
+    private User added_client;
+
+    private Product added_product;
+
+
+    @Before
+    public void setUp() {
+        User seller = new User();
+        User client = new User();
+        added_seller = userService.save(seller);
+        added_client = userService.save(client);
+
+        Product product = new Product();
+        product.setPrecio(100.0F);
+        product.setNombre("Test Product");
+        product.setDescripcion("Test Description");
+        added_product = productService.add(product);
+
+        shoppingCartService.addProduct(added_product, 1, added_client);
+    }
 
     @Test
     public void testGetSalesAll() {
@@ -60,11 +92,7 @@ public class SaleServiceTest {
 
     @Test
     public void testCreateSale() {
-        // Arrange
-        User seller = new User();
-        User client = new User();
-        User added_seller = userService.save(seller);
-        User added_client = userService.save(client);
+        shoppingCartService.addProduct(added_product, 1, added_client);
 
         // Act
         saleService.createSale(added_seller.getId(), added_client.getId());

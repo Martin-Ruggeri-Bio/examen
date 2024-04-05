@@ -19,7 +19,6 @@ import org.springframework.validation.BindingResult;
 import ar.com.plug.examen.domain.service.UserService;
 import ar.com.plug.examen.domain.model.User;
 import ar.com.plug.examen.domain.dtos.UserLoginRequest;
-import ar.com.plug.examen.domain.dtos.UserTokenResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,7 @@ public class AuthController {
 	private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<UserTokenResponse> login(@Valid @RequestBody UserLoginRequest userLogin, BindingResult bindingResult) {
+    public ResponseEntity<User> login(@Valid @RequestBody UserLoginRequest userLogin, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             log.error("Credenciales inválidas {}", userLogin);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credenciales inválidas");
@@ -47,9 +46,8 @@ public class AuthController {
             if (userService.existByUserName(userLogin.getUserName())) {
                 Optional<User> userOptional = userService.getByUserName(userLogin.getUserName());
                 User user = userOptional.orElse(null);
-                UserTokenResponse userTokenResponse = new UserTokenResponse(user.getToken());
                 log.info("Usuario logueado con éxito");
-                return new ResponseEntity<UserTokenResponse>(userTokenResponse, HttpStatus.OK);
+                return new ResponseEntity<User>(user, HttpStatus.OK);
             }
 
             User user = new User();
@@ -71,9 +69,8 @@ public class AuthController {
                     .compact();
             user.setToken(token);
             userService.save(user);
-            UserTokenResponse userTokenResponse = new UserTokenResponse(token);
             log.info("Usuario creado y logueado con éxito");
-            return new ResponseEntity<UserTokenResponse>(userTokenResponse, HttpStatus.OK);
+            return new ResponseEntity<User>(user, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
