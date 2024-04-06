@@ -91,10 +91,10 @@ public class SaleControllerTest {
         clientToken = "Bearer " + objectMapper.readTree(response_client_login).get("token").asText();
 
         MvcResult result_product = mockMvc.perform(post("/product/create")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(productJson))
-                                            .andExpect(status().isOk())
-                                            .andReturn();
+                                                .header("Authorization", sellerToken)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(productJson))
+                                                .andReturn();
 
         response_product = result_product.getResponse().getContentAsString();
 

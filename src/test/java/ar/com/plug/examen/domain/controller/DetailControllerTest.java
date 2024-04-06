@@ -92,10 +92,11 @@ public class DetailControllerTest {
     
     
         MvcResult result_product = mockMvc.perform(post("/product/create")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(productJson))
-                                            .andExpect(status().isOk())
-                                            .andReturn();
+                                                .header("Authorization", sellerToken)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content(productJson))
+                                                .andExpect(status().isOk())
+                                                .andReturn();
 
         response_product = result_product.getResponse().getContentAsString();
 

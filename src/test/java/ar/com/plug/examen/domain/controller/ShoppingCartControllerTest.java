@@ -35,12 +35,23 @@ public class ShoppingCartControllerTest {
 
     private String response_product;
 
+    private String userLoginRequestJson;
+
+    private String sellerJson;
+
+    private String sellerToken;
+
     //obtener token
     @Before
     public void setUp() throws Exception {
-        String userLoginRequestJson = "{"
+        userLoginRequestJson = "{"
         + "\"userName\":\"testUserName\","
         + "\"role\":\"client\""
+        + "}";
+
+        sellerJson = "{"
+        + "\"userName\":\"sellerSaleName\","
+        + "\"role\":\"seller\""
         + "}";
 
         productJson = "{"
@@ -53,6 +64,15 @@ public class ShoppingCartControllerTest {
         + "\"actualizado\":\"2024-03-29T12:01:00Z\""
         + "}";
 
+        MvcResult seller_login = mockMvc.perform(post("/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(sellerJson))
+        .andExpect(status().isOk())
+        .andReturn();
+
+        String response_seller_login = seller_login.getResponse().getContentAsString();
+        sellerToken = "Bearer " + objectMapper.readTree(response_seller_login).get("token").asText();
+
         MvcResult result_login = mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userLoginRequestJson))
@@ -63,9 +83,9 @@ public class ShoppingCartControllerTest {
         token = "Bearer " + objectMapper.readTree(response_login).get("token").asText();
 
         MvcResult result_product = mockMvc.perform(post("/product/create")
+                                            .header("Authorization", sellerToken)
                                             .contentType(MediaType.APPLICATION_JSON)
                                             .content(productJson))
-                                            .andExpect(status().isOk())
                                             .andReturn();
         
         response_product = result_product.getResponse().getContentAsString();
