@@ -69,7 +69,7 @@ erDiagram
     User ||--o{ Venta : "1..n"
 ```
 #### Diagramas Casos de Usos 
-![Screenshot](https://github.com/Martin-Ruggeri-Bio/examen/src/main/resources/images/Captura%20de%20pantalla%202024-04-06%20161628.png)
+![Screenshot](src/main/resources/images/DiagramaCasoUso.png)
 
 ### UserService
 Este servicio proporciona operaciones relacionadas con la gestión de usuarios en el sistema.
@@ -287,9 +287,9 @@ Bonus
 2) Agregar test de integración. (completada) (se encuentran en la carpeta controller, son de integracion por que no testean los metodos deforma directa sino mediante cunsultas http)
 3) Calcular la cobertura de los tests. (completada) (se encuentra en la carpeta target/site/jacoco/index.html)
 
-Aquí puedes encontrar el [informe de cobertura de los tests](https://github.com/Martin-Ruggeri-Bio/examen/src/main/target/site/jacoco/index.html).
+Aquí puedes encontrar el [informe de cobertura de los tests](src/main/target/site/jacoco/index.html).
 
 4) Correr pruebas con base de datos en memoria. (completada) (utilizo memoria h2 para las pruebas y para la app una imagen mysql)
 5) Crear Docker Image. (completada)
-(.src/main/resources/images/Captura de pantalla 2024-04-06 164647.png)
+[Imagen de Docker](src/main/resources/images/ImagenDocker.png)
 6) Hostear la app en un cloud computing libre y enviar la URL para consultar. 
