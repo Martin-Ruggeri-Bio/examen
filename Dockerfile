@@ -1,5 +1,17 @@
+# Usar una imagen base con JDK 11 y Maven
+FROM maven:3.8.4-openjdk-11 AS build
+
+# Establecer un directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de tu proyecto al directorio de trabajo
+COPY . /app
+
+# Ejecutar Maven para construir el proyecto
+RUN mvn clean package
+
 # Start with a base image containing Java runtime
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11-jre-slim-buster
 
 # Add Maintainer Info
 LABEL maintainer="martinruggeri18@gmail.com"

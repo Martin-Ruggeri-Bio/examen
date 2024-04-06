@@ -14,14 +14,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import ar.com.plug.examen.domain.exception.ProductNotFoundException;
 import ar.com.plug.examen.domain.model.Product;
+import ar.com.plug.examen.domain.model.User;
 import ar.com.plug.examen.domain.service.ProductService;
+import ar.com.plug.examen.domain.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
 
 /**
  * @author Martin
@@ -34,6 +39,9 @@ public class ProductController {
 
 	@Autowired
 	private ProductService service;
+
+	@Autowired
+	private UserService userService;
 
 	@GetMapping("/all")
 	public ResponseEntity<List<Product>> findAll() {
@@ -53,11 +61,27 @@ public class ProductController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<Product> add(@Valid @RequestBody Product product, BindingResult bindingResult) {
+	public ResponseEntity<Product> add(@RequestHeader(value="Authorization", required=true) String tokenHeader, @Valid @RequestBody Product product, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			log.error("Datos de producto incorrectos {}", product);
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos de producto incorrectos");
 		}
+		String token = tokenHeader.replace("Bearer ", "");
+        if (token == null) {
+            log.error("Usuario no autorizado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Optional<User> userOptional = userService.getByToken(token);
+        User user = userOptional.orElse(null);
+        
+        if (user == null) {
+            log.error("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+		if (!user.getRole().equals("seller")) {
+            log.error("Rol no autorizado");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 		try {
 			log.info("Creando producto {}", product);
 			return new ResponseEntity<Product>(service.add(product), HttpStatus.OK);
