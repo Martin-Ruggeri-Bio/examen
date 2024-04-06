@@ -287,7 +287,7 @@ Bonus
 2) Agregar test de integración. (completada) (se encuentran en la carpeta controller, son de integracion por que no testean los metodos deforma directa sino mediante cunsultas http)
 3) Calcular la cobertura de los tests. (completada) (se encuentra en la carpeta target/site/jacoco/index.html)
 
-Aquí puedes encontrar el ![HTML](src/main/target/site/jacoco/index.html).
+Aquí puedes encontrar el ![informe de cobertura de los tests](src/main/resources/templates/CalculoCoberturaTest.html).
 
 4) Correr pruebas con base de datos en memoria. (completada) (utilizo memoria h2 para las pruebas y para la app una imagen mysql)
 5) Crear Docker Image. (completada)
